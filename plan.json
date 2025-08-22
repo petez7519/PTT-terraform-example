@@ -1,0 +1,56 @@
+[
+  {
+    "@level": "info",
+    "@message": "Terraform 1.12.2",
+    "@module": "terraform.ui",
+    "@timestamp": "2025-08-21T16:28:51.315525-07:00",
+    "terraform": "1.12.2",
+    "type": "version",
+    "ui": "1.2"
+  },
+  {
+    "@level": "warn",
+    "@message": "Warning: Value for undeclared variable",
+    "@module": "terraform.ui",
+    "@timestamp": "2025-08-21T16:28:51.362906-07:00",
+    "diagnostic": {
+      "severity": "warning",
+      "summary": "Value for undeclared variable",
+      "detail": "The root module does not declare a variable named \"vcs_type\" but a value was found in file \"terraform.tfvars\". If you meant to use this value, add a \"variable\" block to the configuration.\n\nTo silence these warnings, use TF_VAR_... environment variables to provide certain \"global\" settings to all configurations in your organization. To reduce the verbosity of these warnings, use the -compact-warnings option."
+    },
+    "type": "diagnostic"
+  },
+  {
+    "@level": "error",
+    "@message": "Error: No value for required variable",
+    "@module": "terraform.ui",
+    "@timestamp": "2025-08-21T16:28:51.365158-07:00",
+    "diagnostic": {
+      "severity": "error",
+      "summary": "No value for required variable",
+      "detail": "The root module input variable \"circleci_token\" is not set, and has no default value. Use a -var or -var-file command line argument to provide a value for this variable.",
+      "range": {
+        "filename": "main.tf",
+        "start": {
+          "line": 14,
+          "column": 1,
+          "byte": 209
+        },
+        "end": {
+          "line": 14,
+          "column": 26,
+          "byte": 234
+        }
+      },
+      "snippet": {
+        "context": null,
+        "code": "variable \"circleci_token\" {",
+        "start_line": 14,
+        "highlight_start_offset": 0,
+        "highlight_end_offset": 25,
+        "values": []
+      }
+    },
+    "type": "diagnostic"
+  }
+]
