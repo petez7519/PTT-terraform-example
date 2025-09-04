@@ -1,0 +1,85 @@
+version: 2.1
+
+orbs:
+  terraform: circleci/terraform@3.1.0
+
+parameters:
+  terraform-organization:
+    type: string
+    default: "my-org"
+  terraform-workspace:
+    type: string
+    default: "my-workspace"
+
+executors:
+  tf-executor:
+    docker:
+      - image: hashicorp/terraform:1.5.3
+
+jobs:
+  plan:
+    executor: tf-executor
+    parameters:
+      terraform-organization: << pipeline.parameters.terraform-organization >>
+      terraform-workspace:    << pipeline.parameters.terraform-workspace >>
+    steps:
+      - checkout
+
+      - run:
+          name: Authenticate to Terraform Cloud
+          command: |
+            echo $TFC_TOKEN | terraform login --token
+
+      - terraform/init:
+          backend-config: |
+            hostname=app.terraform.io
+            organization=<< parameters.terraform-organization >>
+            workspaces[name]=<< parameters.terraform-workspace >>
+
+      - terraform/plan:
+          extra_args: "-out=tfplan -input=false"
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - tfplan
+
+  apply:
+    executor: tf-executor
+    parameters:
+      terraform-organization: << pipeline.parameters.terraform-organization >>
+      terraform-workspace:    << pipeline.parameters.terraform-workspace >>
+    steps:
+      - attach_workspace:
+          at: .
+
+      - run:
+          name: Authenticate to Terraform Cloud
+          command: |
+            echo $TFC_TOKEN | terraform login --token
+
+      - terraform/init:
+          backend-config: |
+            hostname=app.terraform.io
+            organization=<< parameters.terraform-organization >>
+            workspaces[name]=<< parameters.terraform-workspace >>
+
+      - terraform/apply:
+          plan: tfplan
+          auto_approve: true
+
+workflows:
+  terraform-deploy:
+    jobs:
+      - plan:
+          filters:
+            branches:
+              only: main
+
+      - apply:
+          type: approval
+          requires:
+            - plan
+          filters:
+            branches:
+              only: main
