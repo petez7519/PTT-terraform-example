@@ -19,9 +19,6 @@ executors:
 jobs:
   plan:
     executor: tf-executor
-    parameters:
-      terraform-organization: << pipeline.parameters.terraform-organization >>
-      terraform-workspace:    << pipeline.parameters.terraform-workspace >>
     steps:
       - checkout
 
@@ -36,8 +33,13 @@ jobs:
             organization=<< parameters.terraform-organization >>
             workspaces[name]=<< parameters.terraform-workspace >>
 
-      - terraform/plan:
-          extra_args: "-out=tfplan -input=false"
+      - run:
+          name: Terraform Plan
+          command: terraform plan -out=tfplan -input=false
+
+      - store_artifacts:
+          path: tfplan
+          destination: terraform-plan-output
 
       - persist_to_workspace:
           root: .
@@ -46,9 +48,6 @@ jobs:
 
   apply:
     executor: tf-executor
-    parameters:
-      terraform-organization: << pipeline.parameters.terraform-organization >>
-      terraform-workspace:    << pipeline.parameters.terraform-workspace >>
     steps:
       - attach_workspace:
           at: .
@@ -69,6 +68,7 @@ jobs:
           auto_approve: true
 
 workflows:
+  version: 2
   terraform-deploy:
     jobs:
       - plan:
@@ -76,10 +76,14 @@ workflows:
             branches:
               only: main
 
-      - apply:
+      - hold:
           type: approval
           requires:
             - plan
+
+      - apply:
+          requires:
+            - hold
           filters:
             branches:
               only: main
