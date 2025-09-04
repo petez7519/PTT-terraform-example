@@ -1,6 +1,5 @@
 version: 2.1
 
-# Pipeline-level parameters
 parameters:
   terraform-organization:
     type: string
@@ -29,7 +28,7 @@ jobs:
             echo $TFC_TOKEN | terraform login --token
 
       - terraform/init:
-          backend-config: |
+          backend_config: |
             hostname=app.terraform.io
             organization=<< pipeline.parameters.terraform-organization >>
             workspaces[name]=<< pipeline.parameters.terraform-workspace >>
@@ -59,7 +58,7 @@ jobs:
             echo $TFC_TOKEN | terraform login --token
 
       - terraform/init:
-          backend-config: |
+          backend_config: |
             hostname=app.terraform.io
             organization=<< pipeline.parameters.terraform-organization >>
             workspaces[name]=<< pipeline.parameters.terraform-workspace >>
