@@ -1,5 +1,6 @@
 version: 2.1
 
+# Pipeline-level parameters
 parameters:
   terraform-organization:
     type: string
@@ -8,13 +9,24 @@ parameters:
     type: string
     default: "my-workspace"
 
+# Official Terraform orb
 orbs:
   terraform: circleci/terraform@3.1.0
 
+# Docker executor with a pinned Terraform CLI image
 executors:
   tf-executor:
     docker:
       - image: hashicorp/terraform:1.5.3
+
+# Reusable login command to Terraform Cloud
+commands:
+  tf-login:
+    description: Authenticate to Terraform Cloud
+    steps:
+      - run:
+          name: Terraform Cloud Login
+          command: echo $TFC_TOKEN | terraform login --token
 
 jobs:
   plan:
@@ -22,10 +34,7 @@ jobs:
     steps:
       - checkout
 
-      - run:
-          name: Authenticate to Terraform Cloud
-          command: |
-            echo $TFC_TOKEN | terraform login --token
+      - tf-login
 
       - terraform/init:
           backend_config: |
@@ -52,10 +61,7 @@ jobs:
       - attach_workspace:
           at: .
 
-      - run:
-          name: Authenticate to Terraform Cloud
-          command: |
-            echo $TFC_TOKEN | terraform login --token
+      - tf-login
 
       - terraform/init:
           backend_config: |
@@ -65,25 +71,11 @@ jobs:
 
       - terraform/apply:
           plan: tfplan
-          auto_approve: true
+          extra_args: "-input=false -auto-approve"
+
+  hold:
+    type: approval
+    description: Manual approval before applying Terraform changes
 
 workflows:
-  version: 2
-  terraform-deploy:
-    jobs:
-      - plan:
-          filters:
-            branches:
-              only: main
-
-      - hold:
-          type: approval
-          requires:
-            - plan
-
-      - apply:
-          requires:
-            - hold
-          filters:
-            branches:
-              only: main
+  version
