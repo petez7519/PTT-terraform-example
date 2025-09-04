@@ -1,8 +1,6 @@
 version: 2.1
 
-orbs:
-  terraform: circleci/terraform@3.1.0
-
+# Pipeline-level parameters
 parameters:
   terraform-organization:
     type: string
@@ -10,6 +8,9 @@ parameters:
   terraform-workspace:
     type: string
     default: "my-workspace"
+
+orbs:
+  terraform: circleci/terraform@3.1.0
 
 executors:
   tf-executor:
@@ -30,8 +31,8 @@ jobs:
       - terraform/init:
           backend-config: |
             hostname=app.terraform.io
-            organization=<< parameters.terraform-organization >>
-            workspaces[name]=<< parameters.terraform-workspace >>
+            organization=<< pipeline.parameters.terraform-organization >>
+            workspaces[name]=<< pipeline.parameters.terraform-workspace >>
 
       - run:
           name: Terraform Plan
@@ -60,8 +61,8 @@ jobs:
       - terraform/init:
           backend-config: |
             hostname=app.terraform.io
-            organization=<< parameters.terraform-organization >>
-            workspaces[name]=<< parameters.terraform-workspace >>
+            organization=<< pipeline.parameters.terraform-organization >>
+            workspaces[name]=<< pipeline.parameters.terraform-workspace >>
 
       - terraform/apply:
           plan: tfplan
